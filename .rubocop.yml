@@ -1,0 +1,49 @@
+require:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  NewCops: enable
+
+  TargetRailsVersion: 7.0
+  TargetRubyVersion: 3.1
+
+  Exclude:
+  - db/**/*
+  - config/**/*
+  - bin/**/*
+  - vendor/**/*
+  - Rakefile
+
+  UseCache: false
+
+Layout/DotPosition:
+  EnforcedStyle: trailing
+
+Metrics/BlockLength:
+  AllowedMethods: [describe, context, feature, scenario, let]
+
+Metrics/MethodLength:
+  Max: 15
+  Exclude:
+    - bin/bundle
+
+RSpec/AnyInstance:
+  Enabled: false
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/LetSetup:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+RSpec/NestedGroups:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: never

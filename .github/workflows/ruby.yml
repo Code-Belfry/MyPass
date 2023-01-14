@@ -1,0 +1,63 @@
+name: Ruby
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/Sao_Paulo
+      RAILS_ENV: test
+      RUBYOPT: -W0
+
+    services:
+      postgres:
+        image: postgres:11.5
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Ruby version specified in `.ruby-version`
+      uses: eregon/use-ruby-action@master
+
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get -yqq install libpq-dev
+
+    - name: Setup cache key and directory for gems cache
+      uses: actions/cache@v3
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gem-use-ruby-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: ${{ runner.os }}-ruby-
+
+    - name: Install dependencies
+      run:  bundle install --jobs 4 --retry 3
+
+    - name: Migrations
+      run: |
+        cp config/database.yml.github config/database.yml
+        bundle exec rails db:reset db:setup db:migrate
+
+    - name: Rubocop
+      run: bundle exec rubocop --config .rubocop.yml
+
+    - name: Security audit dependencies
+      run: bundle exec bundle-audit --update
+
+    # - name: Run tests with RSpec
+    #   env:
+    #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    #     DEVISE_JWT_SECRET_KEY: ${{ secrets.DEVISE_JWT_SECRET_KEY }}
+    #   run: bundle exec rspec
